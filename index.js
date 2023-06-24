@@ -11,7 +11,7 @@ app.use(express.json());
 // XvqYf3KaTvB6BUXB
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://mahmoodasheque:XvqYf3KaTvB6BUXB@cluster0.emmhcvo.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -37,11 +37,42 @@ async function run() {
         res.send(result)
     })
 
+    app.get('/users/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await userCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.put('/users/:id', async(req, res)=>{
+      const id = req.params.id;
+      const user = req.body;
+      console.log(id, user);
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true}
+      const updatedUser = {
+        $set: {
+          name: user.name,
+          email: user.email
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedUser, options)
+      res.send(result);
+    })
+
     app.post('/users', async(req,res)=>{
         const user = req.body;
         console.log('new user',user)
         const result = await userCollection.insertOne(user);
         res.send(result)
+    })
+
+    app.delete('/users/:id', async(req, res)=>{
+      const id = req.params.id;
+      console.log('please delete from db', id)
+      const query = {_id: new ObjectId(id)}
+      const result = await userCollection.deleteOne(query)
+      res.send(result)
     })
 
     // Send a ping to confirm a successful connection
